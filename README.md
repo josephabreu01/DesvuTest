@@ -41,17 +41,62 @@ Persona (MappedSuperclass)
 - Java 17+ y Maven (para desarrollo local)
 - Node.js 20+ (para desarrollo local frontend)
 
-## Ejecución con Docker
+## Guía de Despliegue con Docker
+
+El proyecto está completamente contenedorizado y utiliza el archivo [BaseDatos.sql](file:///Users/josephabreu/Documents/Devsu/Proyect/BaseDatos.sql) para la inicialización automática de la estructura y datos de prueba.
+
+### 1. Requisitos
+- **Docker Desktop** instalado y en ejecución.
+- Disponibilidad de los puertos `4200` (Frontend), `8080` (Backend) y `5432` (PostgreSQL).
+
+### 2. Comandos de Ejecución
+
+Desde la raíz del proyecto, utiliza los siguientes comandos:
 
 ```bash
-# Levantar toda la aplicación
-docker compose up --build
+# Construir y levantar todos los servicios en segundo plano
+docker compose up --build -d
 
-# Acceder:
-# Frontend: http://localhost:4200
-# Backend API: http://localhost:8080
-# Base de datos: localhost:5432
+# Detener los servicios
+docker compose stop
+
+# Detener y eliminar contenedores
+docker compose down
+
+# Detener, eliminar contenedores y BORRAR volúmenes de datos (Resetea la DB)
+docker compose down -v
 ```
+
+### 3. Acceso a los Servicios
+
+| Servicio | URL / Acceso | Nota |
+|----------|--------------|------|
+| **Frontend** | [http://localhost:4200](http://localhost:4200) | Aplicación Angular |
+| **Backend API** | [http://localhost:8080](http://localhost:8080) | Documentación/API Base |
+| **PostgreSQL** | `localhost:5432` | User: `banco_user`, Pass: `banco_pass`, DB: `bancodb` |
+
+### 4. Monitoreo y Troubleshooting
+
+Si experimentas problemas, puedes revisar los logs de los contenedores:
+
+```bash
+# Ver logs de todos los servicios
+docker compose logs -f
+
+# Ver logs específicos del backend
+docker compose logs -f backend
+
+# Ver logs específicos de la base de datos
+docker compose logs -f postgres
+```
+
+### 5. Reinicio Limpio (Reseteo de Base de Datos)
+Si deseas limpiar la base de datos y empezar de cero con los registros de `BaseDatos.sql`:
+1. Ejecuta `docker compose down -v`
+2. Ejecuta `docker compose up --build -d`
+
+> [!NOTE]
+> La base de datos es persistente mediante un volumen llamado `postgres_data`. No se perderán los datos al reiniciar los contenedores a menos que uses el comando `down -v`.
 
 ## Desarrollo Local
 
@@ -70,17 +115,9 @@ ng serve
 
 ## Endpoints REST API
 
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| GET | /clientes | Lista todos los clientes |
-| POST | /clientes | Crea un cliente |
-| PUT | /clientes/{id} | Actualiza un cliente |
-| PATCH | /clientes/{id} | Actualización parcial |
-| DELETE | /clientes/{id} | Elimina un cliente |
-| GET | /cuentas | Lista todas las cuentas |
-| POST | /cuentas | Crea una cuenta |
-| ... | ... | igual para movimientos |
-| GET | /reportes?clienteId=&fechaInicio=&fechaFin= | Estado de cuenta |
+Para una documentación interactiva y pruebas rápidas, utiliza la colección de Postman incluida:
+👉 [BancoAPI.postman_collection.json](file:///Users/josephabreu/Documents/Devsu/Proyect/BancoAPI.postman_collection.json)
+
 
 ## Pruebas
 
