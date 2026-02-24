@@ -1,0 +1,72 @@
+<div class="page-header">
+    <h2 class="page-title">Cuentas</h2>
+    <button class="btn btn-primary" (click)="openCreate()">+ Nueva Cuenta</button>
+</div>
+
+<div *ngIf="notification$ | async as note" [class]="'alert alert-' + note.type">
+    {{ note.type === 'error' ? '⚠️' : '✅' }} {{ note.message }}
+</div>
+
+<div class="search-bar">
+    <input type="text" class="search-input" id="search-cuenta" placeholder="Buscar por número, tipo o cliente..."
+        [(ngModel)]="searchTerm" (input)="search()" />
+</div>
+
+<app-table [columns]="tableColumns" [data]="filteredCuentas" [loading]="loading" [emptyIcon]="'💳'"
+    [emptyMessage]="'No se encontraron cuentas'" [customTemplates]="{
+        'currency': currencyTemplate,
+        'status': statusTemplate,
+        'actions': actionsTemplate
+    }">
+</app-table>
+
+<ng-template #currencyTemplate let-c>
+    $ {{ c.saldoInicial | number:'1.2-2' }}
+</ng-template>
+
+<ng-template #statusTemplate let-c>
+    <span class="badge" [class.badge-success]="c.estado" [class.badge-danger]="!c.estado">
+        {{ c.estado ? 'Activa' : 'Inactiva' }}
+    </span>
+</ng-template>
+
+<ng-template #actionsTemplate let-c>
+    <button class="btn-icon edit" (click)="openEdit(c)" title="Editar">✏️</button>
+    <button class="btn-icon delete" (click)="delete(c.id!)" title="Eliminar">🗑️</button>
+</ng-template>
+
+<!-- Modal -->
+<app-modal [show]="showModal" [config]="modalConfig" [loading]="loading" (close)="closeModal()" (submit)="save()">
+    <div class="form-grid" [formGroup]="cuentaForm">
+
+        <div class="form-group">
+            <label class="form-label">Tipo de Cuenta *</label>
+            <select id="tipoCuenta" class="form-control" formControlName="tipoCuenta"
+                [class.error]="cuentaForm.get('tipoCuenta')?.touched && cuentaForm.get('tipoCuenta')?.invalid">
+                <option value="">Seleccionar...</option>
+                <option *ngFor="let tipo of tiposCuenta" [value]="tipo">{{ tipo }}</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Saldo Inicial *</label>
+            <input id="saldoInicial" type="number" class="form-control" formControlName="saldoInicial"
+                [class.error]="cuentaForm.get('saldoInicial')?.touched && cuentaForm.get('saldoInicial')?.invalid"
+                min="0" />
+        </div>
+        <div class="form-group">
+            <label class="form-label">Cliente *</label>
+            <select id="clienteId" class="form-control" formControlName="clienteId"
+                [class.error]="cuentaForm.get('clienteId')?.touched && cuentaForm.get('clienteId')?.invalid">
+                <option [value]="0">Seleccionar cliente...</option>
+                <option *ngFor="let c of clientes" [value]="c.id">{{ c.nombre }} - {{ c.clienteId }}</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Estado</label>
+            <label class="toggle-label">
+                <input type="checkbox" formControlName="estado" id="estadoCuenta" />
+                {{ cuentaForm.get('estado')?.value ? 'Activa' : 'Inactiva' }}
+            </label>
+        </div>
+    </div>
+</app-modal>

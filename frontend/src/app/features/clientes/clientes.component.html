@@ -1,0 +1,75 @@
+<div class="page-header">
+    <h2 class="page-title">Clientes</h2>
+    <button class="btn btn-primary" (click)="openCreate()">+ Nuevo Cliente</button>
+</div>
+
+<div *ngIf="notification$ | async as note" [class]="'alert alert-' + note.type">
+    {{ note.type === 'error' ? '⚠️' : '✅' }} {{ note.message }}
+</div>
+
+<div class="search-bar">
+    <input type="text" class="search-input" placeholder="Buscar por nombre, apellido o clienteId..."
+        [(ngModel)]="searchTerm" (input)="search()" id="search-cliente" />
+</div>
+
+<app-table [columns]="tableColumns" [data]="filteredClientes" [loading]="loading" [emptyIcon]="'👥'"
+    [emptyMessage]="'No se encontraron clientes'" [customTemplates]="{
+        'name': nameTemplate,
+        'status': statusTemplate,
+        'actions': actionsTemplate
+    }">
+</app-table>
+
+<ng-template #nameTemplate let-c>
+    {{ c.nombre }} {{ c.apellido }}
+</ng-template>
+
+<ng-template #statusTemplate let-c>
+    <span class="badge" [class.badge-success]="c.estado" [class.badge-danger]="!c.estado">
+        {{ c.estado ? 'Activo' : 'Inactivo' }}
+    </span>
+</ng-template>
+
+<ng-template #actionsTemplate let-c>
+    <button class="btn-icon edit" (click)="openEdit(c)" title="Editar">✏️</button>
+    <button class="btn-icon delete" (click)="delete(c.id!)" title="Eliminar">🗑️</button>
+</ng-template>
+
+<!-- Modal -->
+<app-modal [show]="showModal" [config]="modalConfig" [loading]="loading" (close)="closeModal()" (submit)="save()">
+    <div class="form-grid" [formGroup]="clienteForm">
+        <div class="form-group">
+            <label class="form-label">Nombre *</label>
+            <input id="nombre" class="form-control" formControlName="nombre"
+                [class.error]="clienteForm.get('nombre')?.touched && clienteForm.get('nombre')?.invalid" />
+        </div>
+        <div class="form-group">
+            <label class="form-label">Apellido *</label>
+            <input id="apellido" class="form-control" formControlName="apellido"
+                [class.error]="clienteForm.get('apellido')?.touched && clienteForm.get('apellido')?.invalid" />
+        </div>
+        <div class="form-group full-width">
+            <label class="form-label">Dirección *</label>
+            <input id="direccion" class="form-control" formControlName="direccion"
+                [class.error]="clienteForm.get('direccion')?.touched && clienteForm.get('direccion')?.invalid" />
+        </div>
+        <div class="form-group">
+            <label class="form-label">Teléfono *</label>
+            <input id="telefono" class="form-control" formControlName="telefono"
+                [class.error]="clienteForm.get('telefono')?.touched && clienteForm.get('telefono')?.invalid" />
+        </div>
+        <div class="form-group">
+            <label class="form-label">Contraseña {{ isEditing ? '' : '*' }}</label>
+            <input id="contrasena" type="password" class="form-control" formControlName="contrasena"
+                [class.error]="clienteForm.get('contrasena')?.touched && clienteForm.get('contrasena')?.invalid"
+                [placeholder]="isEditing ? 'Dejar vacío para no cambiar' : ''" />
+        </div>
+        <div class="form-group">
+            <label class="form-label">Estado</label>
+            <label class="toggle-label">
+                <input type="checkbox" formControlName="estado" id="estado" />
+                {{ clienteForm.get('estado')?.value ? 'Activo' : 'Inactivo' }}
+            </label>
+        </div>
+    </div>
+</app-modal>

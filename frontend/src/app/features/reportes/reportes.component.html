@@ -1,0 +1,92 @@
+<div class="page-header">
+    <h2 class="page-title">Estado de Cuenta</h2>
+    <button class="btn btn-secondary" *ngIf="reportes.length > 0" (click)="exportPdf()" id="btn-export-pdf">
+        📄 Descargar PDF
+    </button>
+</div>
+
+<div *ngIf="notification$ | async as note" [class]="'alert alert-' + note.type">
+    {{ note.type === 'error' ? '⚠️' : '✅' }} {{ note.message }}
+</div>
+
+<div class="filter-card">
+    <form [formGroup]="reportForm" (ngSubmit)="search()" class="filter-grid">
+        <div class="form-group">
+            <label class="form-label">ClienteId</label>
+            <input id="filter-clienteId" type="text" class="form-control" formControlName="clienteId"
+                placeholder="Ej: juan123" />
+        </div>
+        <div class="form-group">
+            <label class="form-label">Nombre</label>
+            <input id="filter-nombreCliente" type="text" class="form-control" formControlName="nombreCliente"
+                placeholder="Ej: Juan" />
+        </div>
+        <div class="form-group">
+            <label class="form-label">Fecha Inicio *</label>
+            <input id="filter-fechaInicio" type="date" class="form-control" formControlName="fechaInicio"
+                [class.error]="reportForm.get('fechaInicio')?.touched && reportForm.get('fechaInicio')?.invalid" />
+        </div>
+        <div class="form-group">
+            <label class="form-label">Fecha Fin *</label>
+            <input id="filter-fechaFin" type="date" class="form-control" formControlName="fechaFin"
+                [class.error]="reportForm.get('fechaFin')?.touched && reportForm.get('fechaFin')?.invalid" />
+        </div>
+        <div class="form-group">
+            <label class="form-label">&nbsp;</label>
+            <button id="btn-buscar-reporte" type="submit" class="btn btn-primary" [disabled]="loading">
+                {{ loading ? '⏳ ...' : '🔍 Buscar' }}
+            </button>
+        </div>
+    </form>
+</div>
+
+<div *ngIf="loading" class="loading">⏳ Generando reporte...</div>
+
+<div *ngIf="searched && !loading && reportes.length === 0">
+    <div class="empty-state">
+        <div class="empty-state-icon">📊</div>
+        <p>No se encontraron movimientos en el período seleccionado</p>
+    </div>
+</div>
+
+<!-- Summary totals -->
+<div *ngIf="reportes.length > 0" class="summary-bar">
+    <span>Créditos: <strong class="text-success">+ $ {{ totalCreditos | number:'1.2-2' }}</strong></span>
+    <span>Débitos: <strong class="text-danger">- $ {{ totalDebitos | number:'1.2-2' }}</strong></span>
+</div>
+
+<div class="table-container" *ngIf="reportes.length > 0">
+    <table>
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Numero Cuenta</th>
+                <th>Tipo</th>
+                <th>Saldo Inicial</th>
+                <th>Estado</th>
+                <th>Movimiento</th>
+                <th>Saldo Disponible</th>
+            </tr>
+        </thead>
+        <tbody *ngFor="let r of reportes">
+            <tr *ngFor="let m of r.movimientos">
+                <td>{{ m.fecha | date:'dd/MM/yyyy' }}</td>
+                <td>{{ r.clienteNombre }} {{ r.clienteApellido }}</td>
+                <td>{{ r.numeroCuenta }}</td>
+                <td>{{ r.tipoCuenta }}</td>
+                <td>$ {{ (m.saldo - m.valor) | number:'1.2-2' }}</td>
+                <td>{{ r.estadoCuenta ? 'True' : 'False' }}</td>
+                <td [style.color]="m.valor > 0 ? '#0e9f6e' : '#f05252'">
+                    {{ m.valor | number:'1.2-2' }}
+                </td>
+                <td>$ {{ m.saldo | number:'1.2-2' }}</td>
+            </tr>
+            <tr *ngIf="r.movimientos.length === 0">
+                <td colspan="8" style="text-align: center; color: #9ca3af; padding: 20px;">
+                    Cuenta {{ r.numeroCuenta }}: Sin movimientos en este período
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

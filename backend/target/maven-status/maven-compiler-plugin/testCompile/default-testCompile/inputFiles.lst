@@ -1,0 +1,8 @@
+/app/src/test/java/com/banco/app/service/ReporteServiceTest.java
+/app/src/test/java/com/banco/app/service/MovimientoServiceTest.java
+/app/src/test/java/com/banco/app/controller/ReporteControllerTest.java
+/app/src/test/java/com/banco/app/service/CuentaServiceTest.java
+/app/src/test/java/com/banco/app/controller/CuentaControllerTest.java
+/app/src/test/java/com/banco/app/controller/MovimientoControllerTest.java
+/app/src/test/java/com/banco/app/service/ClienteServiceTest.java
+/app/src/test/java/com/banco/app/controller/ClienteControllerTest.java

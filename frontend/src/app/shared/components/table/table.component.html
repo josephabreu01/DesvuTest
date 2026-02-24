@@ -1,0 +1,41 @@
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th *ngFor="let col of columns">{{ col.label }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (loading) {
+            <tr>
+                <td [attr.colspan]="columns.length" class="loading">Cargando...</td>
+            </tr>
+            } @else if (data.length === 0) {
+            <tr>
+                <td [attr.colspan]="columns.length">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">{{ emptyIcon }}</div>
+                        <p>{{ emptyMessage }}</p>
+                    </div>
+                </td>
+            </tr>
+            } @else {
+            @for (item of data; track (item.id || item.clienteId)) {
+            <tr>
+                @for (col of columns; track col.key) {
+                <td>
+                    @if (col.template && customTemplates[col.template]) {
+                    <ng-container [ngTemplateOutlet]="customTemplates[col.template]"
+                        [ngTemplateOutletContext]="{ $implicit: item }">
+                    </ng-container>
+                    } @else {
+                    {{ getColumnValue(item, col.key) }}
+                    }
+                </td>
+                }
+            </tr>
+            }
+            }
+        </tbody>
+    </table>
+</div>

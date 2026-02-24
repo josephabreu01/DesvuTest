@@ -1,0 +1,20 @@
+<div class="modal-overlay" *ngIf="show" (click)="onOverlayClick($event)">
+    <div class="modal" (click)="$event.stopPropagation()" [style.maxWidth]="config.maxWidth || '520px'">
+        <div class="modal-header">
+            <h3 class="modal-title">{{ config.title }}</h3>
+            <button class="modal-close" (click)="onClose()">×</button>
+        </div>
+        <div class="modal-body">
+            <ng-content></ng-content>
+
+            <div class="form-actions" *ngIf="config.showFooter">
+                <button class="btn btn-secondary" (click)="onClose()">
+                    {{ config.secondaryButtonLabel || 'Cancelar' }}
+                </button>
+                <button class="btn btn-primary" (click)="onSubmit()" [disabled]="loading">
+                    {{ config.primaryButtonLabel || 'Guardar' }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

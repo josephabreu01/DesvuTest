@@ -1,0 +1,151 @@
+time="2026-02-23T19:08:17-04:00" level=warning msg="/Users/josephabreu/Documents/Devsu/Proyect/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+ Service backend  Building
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [backend internal] load build definition from Dockerfile
+#1 transferring dockerfile: 400B done
+#1 DONE 0.0s
+
+#2 [backend internal] load metadata for docker.io/library/maven:3.9.6-eclipse-temurin-17
+#2 DONE 0.3s
+
+#3 [backend internal] load metadata for docker.io/library/eclipse-temurin:17-jre
+ Service backend  Built
+ Service frontend  Building
+#3 DONE 0.3s
+
+#4 [backend internal] load .dockerignore
+#4 transferring context: 2B done
+#4 DONE 0.0s
+
+#5 [backend build 1/6] FROM docker.io/library/maven:3.9.6-eclipse-temurin-17@sha256:29a1658b1f3078e07c2b17f7b519b45eb47f65d9628e887eac45a8c5c8f939d4
+#5 DONE 0.0s
+
+#6 [backend stage-1 1/3] FROM docker.io/library/eclipse-temurin:17-jre@sha256:ff692acf872589e72ca71b416b3e949ec19f35ebe8abb5365d2f31bce298e762
+#6 DONE 0.0s
+
+#7 [backend internal] load build context
+#7 transferring context: 6.74kB done
+#7 DONE 0.0s
+
+#8 [backend build 2/6] WORKDIR /app
+#8 CACHED
+
+#9 [backend build 3/6] COPY pom.xml .
+#9 CACHED
+
+#10 [backend build 5/6] COPY src ./src
+#10 CACHED
+
+#11 [backend stage-1 2/3] WORKDIR /app
+#11 CACHED
+
+#12 [backend build 6/6] RUN mvn clean package -DskipTests
+#12 CACHED
+
+#13 [backend build 4/6] RUN mvn dependency:go-offline
+#13 CACHED
+
+#14 [backend stage-1 3/3] COPY --from=build /app/target/*.jar app.jar
+#14 CACHED
+
+#15 [backend] exporting to image
+#15 exporting layers done
+#15 writing image sha256:acb9e49155fd99a32ff7d6a6e75b55d4181cd77e7cdf46da45801a4f61e5f663 done
+#15 naming to docker.io/library/proyect-backend done
+#15 DONE 0.0s
+
+#16 [backend] resolving provenance for metadata file
+#16 DONE 0.0s
+
+#17 [frontend internal] load build definition from Dockerfile
+#17 transferring dockerfile: 511B done
+#17 DONE 0.0s
+
+#18 [frontend internal] load metadata for docker.io/library/node:20-alpine
+#18 DONE 0.2s
+
+#19 [frontend internal] load metadata for docker.io/library/nginx:1.25-alpine
+#19 DONE 0.2s
+
+#20 [frontend internal] load .dockerignore
+#20 transferring context: 2B done
+#20 DONE 0.0s
+
+#21 [frontend builder 1/6] FROM docker.io/library/node:20-alpine@sha256:09e2b3d9726018aecf269bd35325f46bf75046a643a66d28360ec71132750ec8
+#21 DONE 0.0s
+
+#22 [frontend stage-1 1/5] FROM docker.io/library/nginx:1.25-alpine@sha256:516475cc129da42866742567714ddc681e5eed7b9ee0b9e9c015e464b4221a00
+#22 DONE 0.0s
+
+#23 [frontend internal] load build context
+#23 transferring context: 377.86MB 5.0s
+#23 transferring context: 531.68MB 7.1s done
+#23 DONE 7.2s
+
+#24 [frontend builder 2/6] WORKDIR /app
+#24 CACHED
+
+#25 [frontend builder 3/6] COPY package*.json ./
+#25 DONE 1.0s
+
+#26 [frontend builder 4/6] RUN npm ci
+#26 2.141 npm error code ERESOLVE
+#26 2.141 npm error ERESOLVE could not resolve
+#26 2.141 npm error
+#26 2.141 npm error While resolving: @angular-devkit/build-angular@17.3.17
+#26 2.141 npm error Found: jest@30.2.0
+#26 2.141 npm error node_modules/jest
+#26 2.141 npm error   dev jest@"^30.2.0" from the root project
+#26 2.141 npm error   peer jest@">=29" from @angular-builders/jest@17.0.3
+#26 2.141 npm error   node_modules/@angular-builders/jest
+#26 2.141 npm error     dev @angular-builders/jest@"^17.0.3" from the root project
+#26 2.141 npm error   2 more (jest-preset-angular, ts-jest)
+#26 2.141 npm error
+#26 2.141 npm error Could not resolve dependency:
+#26 2.141 npm error peerOptional jest@"^29.5.0" from @angular-devkit/build-angular@17.3.17
+#26 2.141 npm error node_modules/@angular-devkit/build-angular
+#26 2.141 npm error   dev @angular-devkit/build-angular@"^17.3.17" from the root project
+#26 2.141 npm error   peer @angular-devkit/build-angular@"^17.0.0" from @angular-builders/jest@17.0.3
+#26 2.141 npm error   node_modules/@angular-builders/jest
+#26 2.141 npm error     dev @angular-builders/jest@"^17.0.3" from the root project
+#26 2.141 npm error   1 more (jest-preset-angular)
+#26 2.141 npm error
+#26 2.141 npm error Conflicting peer dependency: jest@29.7.0
+#26 2.141 npm error node_modules/jest
+#26 2.141 npm error   peerOptional jest@"^29.5.0" from @angular-devkit/build-angular@17.3.17
+#26 2.141 npm error   node_modules/@angular-devkit/build-angular
+#26 2.141 npm error     dev @angular-devkit/build-angular@"^17.3.17" from the root project
+#26 2.141 npm error     peer @angular-devkit/build-angular@"^17.0.0" from @angular-builders/jest@17.0.3
+#26 2.141 npm error     node_modules/@angular-builders/jest
+#26 2.141 npm error       dev @angular-builders/jest@"^17.0.3" from the root project
+#26 2.141 npm error     1 more (jest-preset-angular)
+#26 2.141 npm error
+#26 2.141 npm error Fix the upstream dependency conflict, or retry
+#26 2.141 npm error this command with --force or --legacy-peer-deps
+#26 2.141 npm error to accept an incorrect (and potentially broken) dependency resolution.
+#26 2.141 npm error
+#26 2.141 npm error
+#26 2.141 npm error For a full report see:
+#26 2.141 npm error /root/.npm/_logs/2026-02-23T23_08_27_228Z-eresolve-report.txt
+#26 2.143 npm notice
+#26 2.143 npm notice New major version of npm available! 10.8.2 -> 11.10.1
+#26 2.143 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.10.1
+#26 2.143 npm notice To update run: npm install -g npm@11.10.1
+#26 2.143 npm notice
+#26 2.143 npm error A complete log of this run can be found in: /root/.npm/_logs/2026-02-23T23_08_27_228Z-debug-0.log
+#26 ERROR: process "/bin/sh -c npm ci" did not complete successfully: exit code: 1
+------
+ > [frontend builder 4/6] RUN npm ci:
+2.141 npm error
+2.141 npm error
+2.141 npm error For a full report see:
+2.141 npm error /root/.npm/_logs/2026-02-23T23_08_27_228Z-eresolve-report.txt
+2.143 npm notice
+2.143 npm notice New major version of npm available! 10.8.2 -> 11.10.1
+2.143 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.10.1
+2.143 npm notice To update run: npm install -g npm@11.10.1
+2.143 npm notice
+2.143 npm error A complete log of this run can be found in: /root/.npm/_logs/2026-02-23T23_08_27_228Z-debug-0.log
+------
+failed to solve: process "/bin/sh -c npm ci" did not complete successfully: exit code: 1

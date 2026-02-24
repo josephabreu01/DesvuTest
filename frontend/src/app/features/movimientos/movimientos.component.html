@@ -1,0 +1,68 @@
+<div class="page-header">
+    <h2 class="page-title">Movimientos</h2>
+    <button class="btn btn-primary" (click)="openCreate()">+ Nuevo Movimiento</button>
+</div>
+
+<div *ngIf="notification$ | async as note" [class]="'alert alert-' + note.type">
+    {{ note.type === 'error' ? '⚠️' : '✅' }} {{ note.message }}
+</div>
+
+<div class="search-bar">
+    <input type="text" class="search-input" id="search-movimiento" placeholder="Buscar por tipo o número de cuenta..."
+        [(ngModel)]="searchTerm" (input)="search()" />
+</div>
+
+<app-table [columns]="tableColumns" [data]="filteredMovimientos" [loading]="loading" [emptyIcon]="'💸'"
+    [emptyMessage]="'No se encontraron movimientos'" [customTemplates]="{
+        'initialBalance': balanceTemplate,
+        'status': statusTemplate,
+        'movement': movementTemplate,
+        'actions': actionsTemplate
+    }">
+</app-table>
+
+<ng-template #balanceTemplate let-m>
+    {{ (m.saldo - m.valor) | number:'1.2-2' }}
+</ng-template>
+
+<ng-template #statusTemplate let-m>
+    {{ m.estadoCuenta ? 'True' : 'False' }}
+</ng-template>
+
+<ng-template #movementTemplate let-m>
+    {{ m.tipoMovimiento === 'DEPOSITO' ? 'Depósito' : 'Retiro' }} de {{ (m.valor < 0 ? -m.valor : m.valor) |
+        number:'1.2-2' }} </ng-template>
+
+        <ng-template #actionsTemplate let-m>
+            <button class="btn-icon delete" (click)="delete(m.id!)" title="Eliminar">🗑️</button>
+        </ng-template>
+
+        <!-- Modal -->
+        <app-modal [show]="showModal" [config]="modalConfig" [loading]="loading" (close)="closeModal()"
+            (submit)="save()">
+            <div class="form-grid" [formGroup]="movimientoForm">
+                <div class="form-group">
+                    <label class="form-label">Tipo de Movimiento *</label>
+                    <select id="tipoMovimiento" class="form-control" formControlName="tipoMovimiento"
+                        [class.error]="movimientoForm.get('tipoMovimiento')?.touched && movimientoForm.get('tipoMovimiento')?.invalid">
+                        <option value="">Seleccionar...</option>
+                        <option *ngFor="let tipo of tiposMovimiento" [value]="tipo">{{ tipo }}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Valor * (+ depósito / - retiro)</label>
+                    <input id="valor" type="number" class="form-control" formControlName="valor"
+                        [class.error]="movimientoForm.get('valor')?.touched && movimientoForm.get('valor')?.invalid" />
+                </div>
+                <div class="form-group full-width">
+                    <label class="form-label">Cuenta *</label>
+                    <select id="cuentaMovimiento" class="form-control" formControlName="cuentaId"
+                        [class.error]="movimientoForm.get('cuentaId')?.touched && movimientoForm.get('cuentaId')?.invalid">
+                        <option [value]="0">Seleccionar cuenta...</option>
+                        <option *ngFor="let c of cuentas" [value]="c.id">{{ c.numeroCuenta }} - {{ c.tipoCuenta
+                            }} ($ {{
+                            c.saldoInicial | number:'1.2-2' }})</option>
+                    </select>
+                </div>
+            </div>
+        </app-modal>
