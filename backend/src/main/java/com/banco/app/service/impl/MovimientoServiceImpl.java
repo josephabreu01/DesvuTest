@@ -6,9 +6,11 @@ import com.banco.app.dto.request.MovimientoRequestDTO;
 import com.banco.app.dto.response.MovimientoResponseDTO;
 import com.banco.app.exception.BusinessException;
 import com.banco.app.exception.ResourceNotFoundException;
+import com.banco.app.mapper.MovimientoMapper;
 import com.banco.app.repository.CuentaRepository;
 import com.banco.app.repository.MovimientoRepository;
 import com.banco.app.service.MovimientoService;
+import com.banco.app.service.util.MovimientoValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,12 +27,14 @@ public class MovimientoServiceImpl implements MovimientoService {
 
     private final MovimientoRepository movimientoRepository;
     private final CuentaRepository cuentaRepository;
+    private final MovimientoMapper movimientoMapper;
+    private final MovimientoValidator movimientoValidator;
 
     @Override
     @Transactional(readOnly = true)
     public List<MovimientoResponseDTO> findAll() {
         return movimientoRepository.findAll().stream()
-                .map(this::toResponseDTO)
+                .map(movimientoMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
@@ -39,14 +43,14 @@ public class MovimientoServiceImpl implements MovimientoService {
     public MovimientoResponseDTO findById(Long id) {
         Movimiento movimiento = movimientoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Movimiento no encontrado con id: " + id));
-        return toResponseDTO(movimiento);
+        return movimientoMapper.toResponseDTO(movimiento);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<MovimientoResponseDTO> findByCuentaId(Long cuentaId) {
         return movimientoRepository.findByCuentaId(cuentaId).stream()
-                .map(this::toResponseDTO)
+                .map(movimientoMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
@@ -55,32 +59,15 @@ public class MovimientoServiceImpl implements MovimientoService {
         Cuenta cuenta = cuentaRepository.findById(dto.cuentaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Cuenta no encontrada con id: " + dto.cuentaId()));
 
-        if (!cuenta.getEstado()) {
-            throw new BusinessException("La cuenta está inactiva");
-        }
-
         BigDecimal valor = dto.valor();
         String tipo = dto.tipoMovimiento().toUpperCase();
-        BigDecimal limiteDiario = new BigDecimal("1000");
 
         if (tipo.equals("RETIRO")) {
-            BigDecimal valorAbsoluto = valor.abs();
-            BigDecimal totalHoy = movimientoRepository.sumRetirosDia(cuenta.getCliente().getClienteId(),
-                    LocalDate.now());
-
-            if (totalHoy.add(valorAbsoluto).compareTo(limiteDiario) > 0) {
-                throw new BusinessException("Cupo diario Excedido");
-            }
-
-            // Withdrawals must be negative
-            if (valor.compareTo(BigDecimal.ZERO) > 0) {
-                valor = valor.negate();
-            }
+            movimientoValidator.validateWithdrawal(cuenta, valor);
+            valor = movimientoValidator.normalizeWithdrawalAmount(valor);
         } else if (tipo.equals("DEPOSITO")) {
-            // Deposits must be positive
-            if (valor.compareTo(BigDecimal.ZERO) < 0) {
-                valor = valor.abs();
-            }
+            movimientoValidator.validateDeposit(cuenta);
+            valor = movimientoValidator.normalizeDepositAmount(valor);
         }
 
         BigDecimal nuevoSaldo = cuenta.getSaldoInicial().add(valor);
@@ -101,7 +88,7 @@ public class MovimientoServiceImpl implements MovimientoService {
         cuenta.setSaldoInicial(nuevoSaldo);
         cuentaRepository.save(cuenta);
 
-        return toResponseDTO(movimientoRepository.save(movimiento));
+        return movimientoMapper.toResponseDTO(movimientoRepository.save(movimiento));
     }
 
     @Override
@@ -116,7 +103,7 @@ public class MovimientoServiceImpl implements MovimientoService {
         // 2. Calculate new value based on type
         BigDecimal valorActual = dto.valor();
         String tipo = dto.tipoMovimiento().toUpperCase();
-        BigDecimal nuevoValor = getValor(valorActual, tipo);
+        BigDecimal nuevoValor = normalizeMovementValue(valorActual, tipo);
 
         // 3. Verify new balance
         BigDecimal nuevoSaldo = saldoSinMovimiento.add(nuevoValor);
@@ -132,19 +119,16 @@ public class MovimientoServiceImpl implements MovimientoService {
         cuenta.setSaldoInicial(nuevoSaldo);
         cuentaRepository.save(cuenta);
 
-        return toResponseDTO(movimientoRepository.save(movimiento));
+        return movimientoMapper.toResponseDTO(movimientoRepository.save(movimiento));
     }
 
-    private BigDecimal getValor(BigDecimal valorActual, String tipo) {
-        BigDecimal nuevoValor = valorActual;
+    private BigDecimal normalizeMovementValue(BigDecimal valor, String tipo) {
         if (tipo.equals("RETIRO")) {
-            if (nuevoValor.compareTo(BigDecimal.ZERO) > 0)
-                nuevoValor = valorActual.negate();
+            return movimientoValidator.normalizeWithdrawalAmount(valor);
         } else if (tipo.equals("DEPOSITO")) {
-            if (nuevoValor.compareTo(BigDecimal.ZERO) < 0)
-                nuevoValor = valorActual.abs();
+            return movimientoValidator.normalizeDepositAmount(valor);
         }
-        return nuevoValor;
+        return valor;
     }
 
     @Override
@@ -163,19 +147,5 @@ public class MovimientoServiceImpl implements MovimientoService {
         cuentaRepository.save(cuenta);
 
         movimientoRepository.deleteById(id);
-    }
-
-    private MovimientoResponseDTO toResponseDTO(Movimiento movimiento) {
-        return MovimientoResponseDTO.builder()
-                .id(movimiento.getId())
-                .fecha(movimiento.getFecha())
-                .tipoMovimiento(movimiento.getTipoMovimiento())
-                .valor(movimiento.getValor())
-                .saldo(movimiento.getSaldo())
-                .cuentaId(movimiento.getCuenta().getId())
-                .numeroCuenta(movimiento.getCuenta().getNumeroCuenta())
-                .tipoCuenta(movimiento.getCuenta().getTipoCuenta())
-                .estadoCuenta(movimiento.getCuenta().getEstado())
-                .build();
     }
 }

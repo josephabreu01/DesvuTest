@@ -9,6 +9,11 @@ import java.util.List;
 
 @Repository
 public interface MovimientoRepository extends JpaRepository<Movimiento, Long> {
+
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = { "cuenta" })
+    List<Movimiento> findAll();
+
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = { "cuenta" })
     List<Movimiento> findByCuentaId(Long cuentaId);
 
     List<Movimiento> findByCuentaIdAndFechaBetween(Long cuentaId, LocalDate fechaInicio, LocalDate fechaFin);

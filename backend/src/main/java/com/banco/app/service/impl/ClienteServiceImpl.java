@@ -4,6 +4,7 @@ import com.banco.app.domain.Cliente;
 import com.banco.app.dto.request.ClienteRequestDTO;
 import com.banco.app.dto.response.ClienteResponseDTO;
 import com.banco.app.exception.ResourceNotFoundException;
+import com.banco.app.mapper.ClienteMapper;
 import com.banco.app.repository.ClienteRepository;
 import com.banco.app.service.ClienteService;
 import lombok.RequiredArgsConstructor;
@@ -19,12 +20,13 @@ import java.util.stream.Collectors;
 public class ClienteServiceImpl implements ClienteService {
 
     private final ClienteRepository clienteRepository;
+    private final ClienteMapper clienteMapper;
 
     @Override
     @Transactional(readOnly = true)
     public List<ClienteResponseDTO> findAll() {
         return clienteRepository.findAll().stream()
-                .map(this::toResponseDTO)
+                .map(clienteMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
@@ -33,7 +35,7 @@ public class ClienteServiceImpl implements ClienteService {
     public ClienteResponseDTO findById(Long id) {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado con id: " + id));
-        return toResponseDTO(cliente);
+        return clienteMapper.toResponseDTO(cliente);
     }
 
     @Override
@@ -41,13 +43,13 @@ public class ClienteServiceImpl implements ClienteService {
     public ClienteResponseDTO findByClienteId(String clienteId) {
         Cliente cliente = clienteRepository.findByClienteId(clienteId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado con clienteId: " + clienteId));
-        return toResponseDTO(cliente);
+        return clienteMapper.toResponseDTO(cliente);
     }
 
     @Override
     public ClienteResponseDTO create(ClienteRequestDTO dto) {
-        Cliente cliente = toEntity(dto);
-        return toResponseDTO(clienteRepository.save(cliente));
+        Cliente cliente = clienteMapper.toEntity(dto);
+        return clienteMapper.toResponseDTO(clienteRepository.save(cliente));
     }
 
     @Override
@@ -55,8 +57,8 @@ public class ClienteServiceImpl implements ClienteService {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado con id: " + id));
 
-        updateEntityFromDTO(cliente, dto);
-        return toResponseDTO(clienteRepository.save(cliente));
+        clienteMapper.updateEntityFromDTO(cliente, dto);
+        return clienteMapper.toResponseDTO(clienteRepository.save(cliente));
     }
 
     @Override
@@ -64,7 +66,7 @@ public class ClienteServiceImpl implements ClienteService {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado con id: " + id));
 
-        return toResponseDTO(clienteRepository.save(cliente));
+        return clienteMapper.toResponseDTO(clienteRepository.save(cliente));
     }
 
     @Override
@@ -74,36 +76,5 @@ public class ClienteServiceImpl implements ClienteService {
         }
         clienteRepository.deleteById(id);
     }
-
-    private ClienteResponseDTO toResponseDTO(Cliente cliente) {
-        return ClienteResponseDTO.builder()
-                .id(cliente.getId())
-                .nombre(cliente.getNombre())
-                .apellido(cliente.getApellido())
-                .direccion(cliente.getDireccion())
-                .telefono(cliente.getTelefono())
-                .clienteId(cliente.getClienteId())
-                .estado(cliente.getEstado())
-                .build();
-    }
-
-    private Cliente toEntity(ClienteRequestDTO dto) {
-        Cliente cliente = new Cliente();
-        updateEntityFromDTO(cliente, dto);
-        return cliente;
-    }
-
-    private void updateEntityFromDTO(Cliente cliente, ClienteRequestDTO dto) {
-        cliente.setNombre(dto.nombre());
-        cliente.setApellido(dto.apellido());
-        cliente.setDireccion(dto.direccion());
-        cliente.setTelefono(dto.telefono());
-        if (dto.clienteId() != null && !dto.clienteId().trim().isEmpty()) {
-            cliente.setClienteId(dto.clienteId());
-        }
-        if (dto.contrasena() != null && !dto.contrasena().trim().isEmpty()) {
-            cliente.setContrasena(dto.contrasena());
-        }
-        cliente.setEstado(dto.estado());
-    }
 }
+

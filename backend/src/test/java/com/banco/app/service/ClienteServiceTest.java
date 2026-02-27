@@ -4,6 +4,7 @@ import com.banco.app.domain.Cliente;
 import com.banco.app.dto.request.ClienteRequestDTO;
 import com.banco.app.dto.response.ClienteResponseDTO;
 import com.banco.app.exception.ResourceNotFoundException;
+import com.banco.app.mapper.ClienteMapper;
 import com.banco.app.repository.ClienteRepository;
 import com.banco.app.service.impl.ClienteServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +27,8 @@ class ClienteServiceTest {
     @Mock
     private ClienteRepository clienteRepository;
 
+    private ClienteMapper clienteMapper = new ClienteMapper();
+
     @InjectMocks
     private ClienteServiceImpl clienteService;
 
@@ -34,6 +37,7 @@ class ClienteServiceTest {
 
     @BeforeEach
     void setUp() {
+        clienteService = new ClienteServiceImpl(clienteRepository, clienteMapper);
         cliente = new Cliente();
         cliente.setId(1L);
         cliente.setNombre("Juan");

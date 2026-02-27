@@ -1,3 +1,8 @@
+com/banco/app/service/ReporteServiceTest.class
 com/banco/app/controller/MovimientoControllerTest.class
 com/banco/app/controller/ClienteControllerTest.class
 com/banco/app/controller/ReporteControllerTest.class
+com/banco/app/service/MovimientoServiceTest.class
+com/banco/app/service/ClienteServiceTest.class
+com/banco/app/controller/CuentaControllerTest.class
+com/banco/app/service/CuentaServiceTest.class

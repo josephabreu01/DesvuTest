@@ -1,13 +1,16 @@
 package com.banco.app.service;
 
+import com.banco.app.domain.Cliente;
 import com.banco.app.domain.Cuenta;
 import com.banco.app.domain.Movimiento;
 import com.banco.app.dto.request.MovimientoRequestDTO;
 import com.banco.app.dto.response.MovimientoResponseDTO;
 import com.banco.app.exception.BusinessException;
+import com.banco.app.mapper.MovimientoMapper;
 import com.banco.app.repository.CuentaRepository;
 import com.banco.app.repository.MovimientoRepository;
 import com.banco.app.service.impl.MovimientoServiceImpl;
+import com.banco.app.service.util.MovimientoValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +25,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,6 +37,10 @@ class MovimientoServiceTest {
     @Mock
     private CuentaRepository cuentaRepository;
 
+    private MovimientoMapper movimientoMapper = new MovimientoMapper();
+
+    private MovimientoValidator movimientoValidator;
+
     @InjectMocks
     private MovimientoServiceImpl movimientoService;
 
@@ -42,12 +50,22 @@ class MovimientoServiceTest {
 
     @BeforeEach
     void setUp() {
+        movimientoValidator = new MovimientoValidator(movimientoRepository);
+        movimientoService = new MovimientoServiceImpl(movimientoRepository, cuentaRepository, movimientoMapper, movimientoValidator);
+        
+        Cliente cliente = new Cliente();
+        cliente.setId(1L);
+        cliente.setNombre("Juan");
+        cliente.setApellido("Perez");
+        cliente.setClienteId("juan123");
+        
         cuenta = new Cuenta();
         cuenta.setId(1L);
         cuenta.setNumeroCuenta("4759874563");
         cuenta.setTipoCuenta("Ahorro");
         cuenta.setSaldoInicial(new BigDecimal("1000.00"));
         cuenta.setEstado(true);
+        cuenta.setCliente(cliente);
 
         movimiento = new Movimiento();
         movimiento.setId(1L);
@@ -103,6 +121,7 @@ class MovimientoServiceTest {
         // Trying to withdraw 2000.00
         MovimientoRequestDTO retiroRequest = new MovimientoRequestDTO("RETIRO", new BigDecimal("2000.00"), 1L);
         when(cuentaRepository.findById(1L)).thenReturn(Optional.of(cuenta));
+        when(movimientoRepository.sumRetirosDia(anyString(), any(LocalDate.class))).thenReturn(BigDecimal.ZERO);
 
         assertThrows(BusinessException.class, () -> movimientoService.create(retiroRequest));
         verify(movimientoRepository, never()).save(any(Movimiento.class));
@@ -147,6 +166,7 @@ class MovimientoServiceTest {
         // Current balance is 1000.00
         MovimientoRequestDTO retiroRequest = new MovimientoRequestDTO("RETIRO", new BigDecimal("400.00"), 1L);
         when(cuentaRepository.findById(1L)).thenReturn(Optional.of(cuenta));
+        when(movimientoRepository.sumRetirosDia(anyString(), any(LocalDate.class))).thenReturn(BigDecimal.ZERO);
 
         // Mock save returning a movement with value -400
         Movimiento savedMov = new Movimiento();
@@ -163,3 +183,5 @@ class MovimientoServiceTest {
         verify(cuentaRepository, times(1)).save(any(Cuenta.class));
     }
 }
+
+

@@ -5,9 +5,11 @@ import com.banco.app.domain.Cuenta;
 import com.banco.app.dto.request.CuentaRequestDTO;
 import com.banco.app.dto.response.CuentaResponseDTO;
 import com.banco.app.exception.ResourceNotFoundException;
+import com.banco.app.mapper.CuentaMapper;
 import com.banco.app.repository.ClienteRepository;
 import com.banco.app.repository.CuentaRepository;
 import com.banco.app.service.CuentaService;
+import com.banco.app.service.util.AccountNumberGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,12 +24,14 @@ public class CuentaServiceImpl implements CuentaService {
 
     private final CuentaRepository cuentaRepository;
     private final ClienteRepository clienteRepository;
+    private final CuentaMapper cuentaMapper;
+    private final AccountNumberGenerator accountNumberGenerator;
 
     @Override
     @Transactional(readOnly = true)
     public List<CuentaResponseDTO> findAll() {
         return cuentaRepository.findAll().stream()
-                .map(this::toResponseDTO)
+                .map(cuentaMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
@@ -36,35 +40,31 @@ public class CuentaServiceImpl implements CuentaService {
     public CuentaResponseDTO findById(Long id) {
         Cuenta cuenta = cuentaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cuenta no encontrada con id: " + id));
-        return toResponseDTO(cuenta);
+        return cuentaMapper.toResponseDTO(cuenta);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<CuentaResponseDTO> findByClienteId(Long clienteId) {
         return cuentaRepository.findByClienteId(clienteId).stream()
-                .map(this::toResponseDTO)
+                .map(cuentaMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
     public CuentaResponseDTO create(CuentaRequestDTO dto) {
-        String numeroCuenta;
-        do {
-            numeroCuenta = String.format("%010d", (long) (Math.random() * 10000000000L));
-        } while (cuentaRepository.existsByNumeroCuenta(numeroCuenta));
+        String numeroCuenta = accountNumberGenerator.generateUniqueAccountNumber();
+        
         Cliente cliente = clienteRepository.findById(dto.clienteId())
                 .orElseThrow(
                         () -> new ResourceNotFoundException("Cliente no encontrado con id: " + dto.clienteId()));
 
         Cuenta cuenta = new Cuenta();
         cuenta.setNumeroCuenta(numeroCuenta);
-        cuenta.setTipoCuenta(dto.tipoCuenta());
-        cuenta.setSaldoInicial(dto.saldoInicial());
-        cuenta.setEstado(dto.estado() != null ? dto.estado() : true);
+        cuentaMapper.updateEntityFromDTO(cuenta, dto);
         cuenta.setCliente(cliente);
 
-        return toResponseDTO(cuentaRepository.save(cuenta));
+        return cuentaMapper.toResponseDTO(cuentaRepository.save(cuenta));
     }
 
     @Override
@@ -76,12 +76,10 @@ public class CuentaServiceImpl implements CuentaService {
                 .orElseThrow(
                         () -> new ResourceNotFoundException("Cliente no encontrado con id: " + dto.clienteId()));
 
-        cuenta.setTipoCuenta(dto.tipoCuenta());
-        cuenta.setSaldoInicial(dto.saldoInicial());
-        cuenta.setEstado(dto.estado() != null ? dto.estado() : true);
+        cuentaMapper.updateEntityFromDTO(cuenta, dto);
         cuenta.setCliente(cliente);
 
-        return toResponseDTO(cuentaRepository.save(cuenta));
+        return cuentaMapper.toResponseDTO(cuentaRepository.save(cuenta));
     }
 
     @Override
@@ -89,7 +87,7 @@ public class CuentaServiceImpl implements CuentaService {
         Cuenta cuenta = cuentaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cuenta no encontrada con id: " + id));
 
-        return toResponseDTO(cuentaRepository.save(cuenta));
+        return cuentaMapper.toResponseDTO(cuentaRepository.save(cuenta));
     }
 
     @Override
@@ -98,17 +96,5 @@ public class CuentaServiceImpl implements CuentaService {
             throw new ResourceNotFoundException("Cuenta no encontrada con id: " + id);
         }
         cuentaRepository.deleteById(id);
-    }
-
-    private CuentaResponseDTO toResponseDTO(Cuenta cuenta) {
-        return CuentaResponseDTO.builder()
-                .id(cuenta.getId())
-                .numeroCuenta(cuenta.getNumeroCuenta())
-                .tipoCuenta(cuenta.getTipoCuenta())
-                .saldoInicial(cuenta.getSaldoInicial())
-                .estado(cuenta.getEstado())
-                .clienteId(cuenta.getCliente().getId())
-                .clienteNombre(cuenta.getCliente().getNombre())
-                .build();
     }
 }

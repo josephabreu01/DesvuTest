@@ -4,9 +4,11 @@ import com.banco.app.domain.Cliente;
 import com.banco.app.domain.Cuenta;
 import com.banco.app.dto.request.CuentaRequestDTO;
 import com.banco.app.dto.response.CuentaResponseDTO;
+import com.banco.app.mapper.CuentaMapper;
 import com.banco.app.repository.ClienteRepository;
 import com.banco.app.repository.CuentaRepository;
 import com.banco.app.service.impl.CuentaServiceImpl;
+import com.banco.app.service.util.AccountNumberGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,6 +33,10 @@ class CuentaServiceTest {
     @Mock
     private ClienteRepository clienteRepository;
 
+    private CuentaMapper cuentaMapper = new CuentaMapper();
+
+    private AccountNumberGenerator accountNumberGenerator;
+
     @InjectMocks
     private CuentaServiceImpl cuentaService;
 
@@ -40,6 +46,8 @@ class CuentaServiceTest {
 
     @BeforeEach
     void setUp() {
+        accountNumberGenerator = new AccountNumberGenerator(cuentaRepository);
+        cuentaService = new CuentaServiceImpl(cuentaRepository, clienteRepository, cuentaMapper, accountNumberGenerator);
         cliente = new Cliente();
         cliente.setId(1L);
         cliente.setNombre("Juan Perez");

@@ -1,0 +1,45 @@
+# Compiled output
+backend/target/
+frontend/dist/
+frontend/tmp/
+frontend/out-tsc/
+frontend/bazel-out/
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Java/Maven
+.mvn/
+mvnw
+mvnw.cmd
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+docker.log
+
+# Docker
+.docker/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Miscellaneous
+frontend/.angular/cache
+frontend/.sass-cache/
+frontend/connect.lock
+frontend/coverage
+frontend/typings
